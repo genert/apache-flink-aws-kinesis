@@ -34,7 +34,7 @@ public class LogProcessingJob {
     private static StreamingFileSink<Tuple2> createS3SinkFromStaticConfig() {
         OutputFileConfig config = OutputFileConfig
                 .builder()
-                .withPartPrefix("prefix")
+                .withPartPrefix("prefix") // HOW TO GET user_id here?
                 .withPartSuffix(".json")
                 .build();
 
@@ -59,8 +59,8 @@ public class LogProcessingJob {
             return new Tuple2(jsonNode.get("user_id").asInt(),
                     jsonNode.get("status").asText());
         }).returns(Types.TUPLE(Types.INT, Types.STRING))
+                .keyBy(event -> event.f0) // partition by user_id
                 .addSink(createS3SinkFromStaticConfig());
-
 
         env.execute("Process log files");
     }
